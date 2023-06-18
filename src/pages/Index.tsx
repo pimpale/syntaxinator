@@ -1,8 +1,14 @@
+import * as ort from 'onnxruntime-web';
 
 const Home = () =>
-   <div>
-     Hi
-   </div>
+  <div className='container'>
+    <section>
+      <h2>the data</h2>
+      <p>
+        Hi!
+      </p>
+    </section>
+  </div>
 
 
 import React from 'react';
