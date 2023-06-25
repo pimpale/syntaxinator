@@ -10,7 +10,9 @@ type MnistOnnxToolProps = {
 }
 
 type MnistOnnxToolState = {
-  modelGuess: number | null
+  pickerState: "empty" | "loading" | "error" | "drawn";
+  modelGuess: number | null;
+  error: string | null;
 }
 
 class MnistOnnxTool extends React.Component<MnistOnnxToolProps, MnistOnnxToolState> {
@@ -21,19 +23,17 @@ class MnistOnnxTool extends React.Component<MnistOnnxToolProps, MnistOnnxToolSta
   // canvas element
   private canvas = React.createRef<HTMLCanvasElement>();
 
-  // button element
-  private button = React.createRef<HTMLButtonElement>();
-
-  // model guess
-
   constructor(props: MnistOnnxToolProps) {
     super(props);
     this.state = {
-      modelGuess: null
+      pickerState: "empty",
+      modelGuess: null,
+      error: null
     };
   }
 
   doDraw = async () => {
+    this.setState({ pickerState: "loading" });
     // retrieve image file from file picker
     const file = this.filepicker.current!.files![0];
     // create a new image element
@@ -43,8 +43,17 @@ class MnistOnnxTool extends React.Component<MnistOnnxToolProps, MnistOnnxToolSta
     // get the canvas context
     const ctx = this.canvas.current!.getContext('2d')!;
     // when the image is loaded, draw the image on the canvas
-    await img.decode();
-    ctx.drawImage(img, 0, 0, 28, 28);
+    try {
+      await img.decode();
+      ctx.drawImage(img, 0, 0, 28, 28);
+      this.setState({ pickerState: "drawn", error: null });
+    } catch (e: any) {
+      console.log(e);
+      this.setState({
+        pickerState: "error",
+        error: e.message
+      });
+    }
   }
 
   doInference = async () => {
@@ -90,12 +99,15 @@ class MnistOnnxTool extends React.Component<MnistOnnxToolProps, MnistOnnxToolSta
             }}>
             <div className='mb-3'>
               <label htmlFor='input' className='form-label'>Pick a file to classify</label>
-              <input className='form-control' type='file' ref={this.filepicker} onChange={() => this.doDraw()} />
+              <input className={['form-control', this.state.error === null ? '' : 'is-invalid'].join(' ')} type='file' ref={this.filepicker} onChange={() => this.doDraw()} />
+              <div className='invalid-feedback'>
+                {this.state.error}
+              </div>
             </div>
             <div className='mb-3'>
               <canvas ref={this.canvas} className="border border-dark" style={{ 'width': '15rem', 'height': '15rem' }} width={28} height={28} />
             </div>
-            <button ref={this.button} type='submit' className='btn btn-primary'>
+            <button type='submit' className='btn btn-primary' disabled={this.state.pickerState !== 'drawn'}>
               Submit
             </button>
           </form>
