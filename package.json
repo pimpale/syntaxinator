@@ -42,6 +42,7 @@
     "path": "^0.12.7",
     "rollup-plugin-multi-input": "^1.4.1",
     "vite": "^4.3.9",
+    "vite-plugin-static-copy": "^0.16.0",
     "vite-react-jsx": "^1.1.2"
   }
 }
